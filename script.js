@@ -1,104 +1,127 @@
+const canvas = document.getElementById("canvas");
+
+const faceColor = document.getElementById("face-color");
+const borderColor = document.getElementById("border-color");
+const lineColor = document.getElementById("line-color");
+const largeHandsColor = document.getElementById("large-hand-color");
+const secondHandColor = document.getElementById("second-hand-color");
+
 function clock() {
   const now = new Date();
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
 
-  // Setup canvas
-  ctx.save(); // save the default state
-  ctx.clearRect(0, 0, 500, 500);
-  ctx.translate(250, 250); // Put 0,0 in the middle
-  ctx.rotate(-Math.PI / 2); // Rotate clock -90deg
+  // basic setup of the canvas element
+  // Sav kod ide izmedju ctx.save() i ctx.restore()
+  // tako animacija funkcinise:
+  //  sa save() se sacuva a sa restore() se vraca na pocetak uzimajuci
+  // novu pocetnu poziciju ona koja je sacuvana sa save()
 
-  // Set default styles
-  ctx.strokeStyle = '#000000';
-  ctx.fillStyle = '#f4f4f4';
-  ctx.lineWidth = 5;
-  ctx.lineCap = 'round';
-
-  // Draw clock face/border
   ctx.save();
-  ctx.beginPath();
+  ctx.clearRect(0, 0, 500, 500);
+  ctx.translate(250, 250); //Puting 0,0(x,y) in the middle
+  ctx.rotate(-Math.PI / 2); //rotate -90deg,in order for time to show corectly at 12 not 3
+
+  // Styles
+  ctx.strokeStyle = "#000000";
+  ctx.fillStyle = "#fae6e3";
+  ctx.lineWidth = 5;
+  ctx.lineCap = "round";
+
+  // Draw clock face and border
+  // sve sto se postavi izmedju jednog save() i restore() vazi samo tu
+  ctx.save();
+  ctx.beginPath(); // sa ovim pocinjemo bilo kakvo crtanje
   ctx.lineWidth = 14;
-  ctx.strokeStyle = '#800000';
+  ctx.strokeStyle = borderColor.value;
+  ctx.fillStyle = faceColor.value;
   ctx.arc(0, 0, 142, 0, Math.PI * 2, true);
-  ctx.stroke();
+  ctx.stroke(); //crtamo
   ctx.fill();
   ctx.restore();
 
-  // Draw hour lines
+  //   Hour marks
   ctx.save();
+  ctx.strokeStyle = lineColor.value;
   for (let i = 0; i < 12; i++) {
     ctx.beginPath();
     ctx.rotate(Math.PI / 6);
-    ctx.moveTo(100, 0);
-    ctx.lineTo(120, 0);
+    ctx.moveTo(110, 0);
+    ctx.lineTo(130, 0);
     ctx.stroke();
   }
+
   ctx.restore();
 
-  // Draw minute lines
+  //   Minute marks
   ctx.save();
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = lineColor.value;
   for (let i = 0; i < 60; i++) {
     if (i % 5 !== 0) {
+      //uslov da se ne bi ponavljale minut markeri sa satima
       ctx.beginPath();
-      ctx.moveTo(117, 0);
-      ctx.lineTo(120, 0);
+      ctx.lineWidth = 3;
+      ctx.moveTo(125, 0);
+      ctx.lineTo(130, 0);
       ctx.stroke();
     }
     ctx.rotate(Math.PI / 30);
   }
+
   ctx.restore();
 
-  // Get current time
+  //   Get current time
   const hr = now.getHours() % 12;
   const min = now.getMinutes();
   const sec = now.getSeconds();
 
-  // console.log(`${hr}:${min}:${sec}`);
-
-  // Draw hour hand
+  //   Hour hand
   ctx.save();
   ctx.rotate(
     (Math.PI / 6) * hr + (Math.PI / 360) * min + (Math.PI / 21600) * sec
   );
-  ctx.strokeStyle = '#800000';
-  ctx.lineWidth = 14;
+  ctx.strokeStyle = largeHandsColor.value;
+  ctx.lineWidth = "12";
   ctx.beginPath();
   ctx.moveTo(-20, 0);
   ctx.lineTo(80, 0);
   ctx.stroke();
   ctx.restore();
 
-  // Draw min hand
+  //   Minute hand
   ctx.save();
-  ctx.rotate((Math.PI / 30) * min + (Math.PI / 1800) * sec);
-  ctx.strokeStyle = '#800000';
-  ctx.lineWidth = 10;
+  ctx.rotate((Math.PI / 30) * min + (Math.PI / 21600) * sec);
+  ctx.strokeStyle = largeHandsColor.value;
+  ctx.lineWidth = "8";
   ctx.beginPath();
-  ctx.moveTo(-28, 0);
-  ctx.lineTo(112, 0);
+  ctx.moveTo(-20, 0);
+  ctx.lineTo(110, 0);
   ctx.stroke();
   ctx.restore();
 
-  // Draw sec hand
+  //   Second hand
   ctx.save();
-  ctx.rotate((sec * Math.PI) / 30);
-  ctx.strokeStyle = '#FF7F50';
-  ctx.fillStyle = '#FF7F50';
-  ctx.lineWidth = 6;
+  ctx.rotate((Math.PI / 30) * sec);
+  ctx.strokeStyle = secondHandColor.value;
+  ctx.fillStyle = secondHandColor.value;
+  ctx.lineWidth = "5";
   ctx.beginPath();
-  ctx.moveTo(-30, 0);
-  ctx.lineTo(100, 0);
+  ctx.moveTo(-20, 0);
+  ctx.lineTo(120, 0);
   ctx.stroke();
   ctx.beginPath();
-  ctx.arc(0, 0, 10, 0, Math.PI * 2, true);
+  ctx.arc(0, 0, 6, 0, Math.PI * 2, true);
   ctx.fill();
   ctx.restore();
 
-  ctx.restore(); // restore default state
-
+  ctx.restore();
   requestAnimationFrame(clock);
 }
 
 requestAnimationFrame(clock);
+document.getElementById("save-btn").addEventListener("click", () => {
+  const dataURL = canvas.toDataURL("image/png");
+  const link = document.createElement("a");
+  link.download = "clock.png";
+  link.href = dataURL;
+  link.click();
+});
